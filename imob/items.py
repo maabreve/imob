@@ -10,7 +10,6 @@ import scrapy
 class ImobItem(scrapy.Item):
     # define the fields for your item here like:
     _id: scrapy.Field()
-    name = scrapy.Field()
     code = scrapy.Field()
     title = scrapy.Field()
     price = scrapy.Field()
@@ -18,9 +17,10 @@ class ImobItem(scrapy.Item):
     url = scrapy.Field()
     lat = scrapy.Field()
     lng = scrapy.Field()
-    area_total = scrapy.Field()
-    area_util = scrapy.Field()
-    banheiros = scrapy.Field()
+    total_area = scrapy.Field()
+    util_area = scrapy.Field()
+    bathrooms = scrapy.Field()
     suites = scrapy.Field()
-    idade = scrapy.Field()
-    vagas = scrapy.Field()
+    age = scrapy.Field()
+    parking = scrapy.Field()
+    price_changed = scrapy.Field()

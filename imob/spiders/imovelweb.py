@@ -32,54 +32,59 @@ class ImovelwebSpider(CrawlSpider):
     def parse_detail_page(self, response):
         
         item = ImobItem()
-        
-        codigo = response.xpath('//span[contains(text(), "Código do Imovelweb")]/text()').extract_first()
-        if codigo:
-            item['code'] = re.sub("\D", "", codigo)
-        
-        item['url'] = response.url
+        code_number = 0
+        code = response.xpath('//span[contains(text(), "Código do Imovelweb")]/text()').extract_first()
+        price = response.xpath('//p[contains(@class, "precios")]/strong/text()').extract_first()
         item['lat'] = response.xpath('//input[@type="hidden" and @name="lat"]/@value').extract_first()
         item['lng'] = response.xpath('//input[@type="hidden" and @name="lng"]/@value').extract_first()
         
-        price = response.xpath('//p[contains(@class, "precios")]/strong/text()').extract_first()
-        if price:
+        if code and price and item['lat'] or item['lng']:
+            item['url'] = response.url
+            code_number = re.sub("\D", "", code)
+            item['code'] = code_number
             item['price'] = re.sub("\D", "", price)
-        
-        common_price = response.xpath('//*[contains(text(), "Condomínio:")]/text()').extract_first()
-        if common_price:
-            item['common_price'] = re.sub("\D", "", common_price)
-        
-        area_total = response.xpath('//*[contains(text(), "Área total:")]/text()').extract_first()
-        if area_total:
-            item['area_total'] = re.sub("\D", "", area_total)
+            common_price = response.xpath('//*[contains(text(), "Condomínio:")]/text()').extract_first()
+            if common_price:
+                item['common_price'] = re.sub("\D", "", common_price)
+            
+            total_area = response.xpath('//*[contains(text(), "Área total:")]/text()').extract_first()
+            if total_area:
+                item['total_area'] = re.sub("\D", "", total_area)
 
-        area_util = response.xpath('//*[contains(text(), "Área útil:")]/text()').extract_first()
-        if area_util:
-            item['area_util'] = re.sub("\D", "", area_util)
+            util_area = response.xpath('//*[contains(text(), "Área útil:")]/text()').extract_first()
+            if util_area:
+                item['util_area'] = re.sub("\D", "", util_area)
 
-        banheiros = response.xpath('//*[contains(text(), "Banheiros:")]/text()').extract_first()
-        if banheiros:
-            item['banheiros'] = re.sub("\D", "", banheiros)
+            bathrooms = response.xpath('//*[contains(text(), "bathrooms:")]/text()').extract_first()
+            if bathrooms:
+                item['bathrooms'] = re.sub("\D", "", bathrooms)
 
-        suites = response.xpath('//*[contains(text(), "Suites:")]/text()').extract_first()
-        if suites:
-            item['suites'] = re.sub("\D", "", suites)
+            suites = response.xpath('//*[contains(text(), "Suites:")]/text()').extract_first()
+            if suites:
+                item['suites'] = re.sub("\D", "", suites)
 
-        
-        idade = response.xpath('//*[contains(text(), "Idade do imóvel:")]/text()').extract_first()
-        if idade:
-            item['idade'] = re.sub("\D", "", idade)
+            age = response.xpath('//*[contains(text(), "age do imóvel:")]/text()').extract_first()
+            if age:
+                item['age'] = re.sub("\D", "", age)
 
-        vagas = response.xpath('//*[contains(text(), "Vagas:")]/text()').extract_first()
-        if vagas:
-            item['vagas'] = re.sub("\D", "", vagas)
+            parking = response.xpath('//*[contains(text(), "parking:")]/text()').extract_first()
+            if parking:
+                item['parking'] = re .sub("\D", "", parking)
 
-        yield item
+            yield item
 
-        # client = MongoClient("mongodb://admin:macacoveio10@ds117148.mlab.com:17148/imob", 17148)
-        client = MongoClient("localhost:27017")
-        
-        db = client["imob"]
-        posts = db.ad
-        result = posts.insert_one(dict(item))
-        print('Posted: {0}'.format(result.inserted_id))
+            # client = MongoClient("mongodb://admin:macacoveio10@ds117148.mlab.com:17148/imob", 17148)
+            client = MongoClient("localhost:27017")
+            db = client["imob"]
+            posts = db.ad
+
+            result = ""
+            if posts.find_one({"code": code_number}):
+                posts.update_one({"code": code_number},{"$set": {"price": price}})
+                print('Updated:', code_number)
+            else:
+                item['parking']
+                result = posts.insert_one(dict(item))
+                print('Posted:', format(result.inserted_id))
+        else:
+            pass
