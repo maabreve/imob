@@ -83,7 +83,6 @@ class ImovelwebSpider(CrawlSpider):
                 posts.update_one({"code": code_number},{"$set": {"price": price}})
                 print('Updated:', code_number)
             else:
-                item['parking']
                 result = posts.insert_one(dict(item))
                 print('Posted:', format(result.inserted_id))
         else:
